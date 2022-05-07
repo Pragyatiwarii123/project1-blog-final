@@ -17,6 +17,9 @@ const authentication = function ( req, res, next) {
           
         let userLoggedIn = decodedToken.authorId;
         req["authorId"] = userLoggedIn;
+        console.log(token)
+        console.log(userLoggedIn);
+        // console.log(req.authorId)
         next();
     }
     catch(err){
@@ -30,7 +33,7 @@ const authorization1 = async function(req,res,next){
         let bId = req.params.blogId;
         let id = req.authorId;
         let blog = await blogModel.findById(bId);
-////////For authorisation we need author id
+//For authorisation we need author id
         if(id != blog.authorId){
             return res.status(403).send({status: false , msg : "Not authorized..!" });
         }

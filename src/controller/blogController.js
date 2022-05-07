@@ -156,6 +156,7 @@ const updateblog = async function (req, res) {
 const deleteBlogById = async function (req, res) {
     try {
         let blogId = req.params.blogId;
+    
         let blog = await blogModel.findById(blogId);
 
         if (!blog) {
@@ -165,12 +166,8 @@ const deleteBlogById = async function (req, res) {
         if (blog.isDeleted == true) {
             return res.status(400).send({ status: false, msg: "Blog has already been deleted" })
         }
-        //authorisation
-        let authorId = blog.authorId;
-        let id = req.authorId;
-        if (id != authorId) {
-            return res.status(403).send({ status: false, msg: "Not authorized..!" });
-        }
+        
+        
 
         const deletedtedUser = await blogModel.findOneAndUpdate({ _id: blogId }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
         res.status(200).send({ status: true, msg: "done", data: deletedtedUser });
@@ -193,9 +190,16 @@ const deleteBlogByParams = async function (req, res) {
 
         let fetchdata = await blogModel.find(query1)
 
-
         if (fetchdata.length == 0) {
             return res.status(404).send({ status: false, msg: " Blog document doesn't exist " })
+        }
+
+        //authorisation
+        let authorId = query1.authorId;
+        let id = req.authorId;
+ 
+        if (id != authorId) {
+            return res.status(403).send({ status: false, msg: "Not authorized..!" });
         }
 
         let deletedtedUser = await blogModel.updateMany(query1, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });

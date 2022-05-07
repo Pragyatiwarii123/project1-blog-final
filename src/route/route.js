@@ -13,9 +13,9 @@ router.get("/blogs",middleware.authentication, blogController.getBlogs);
 
 router.put("/blogs/:blogId",middleware.authentication,middleware.authorization1, blogController.updateblog);
 
-router.delete("/blogs",middleware.authentication, blogController.deleteBlogById);
+router.delete("/blogs/:blogId",middleware.authentication,middleware.authorization1, blogController.deleteBlogById);
 
-router.delete("/blogs/:blogId",middleware.authentication,middleware.authorization1,blogController.deleteBlogByParams);
+router.delete("/blogs",middleware.authentication,blogController.deleteBlogByParams);
 
 router.post("/login",auhorController.login);
 
