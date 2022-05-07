@@ -106,10 +106,7 @@ const login = async function (req, res) {
 
         let token = jwt.sign(
             {
-                authorId: author._id,
-                iat:Math.floor(Date.now()/1000),
-                exp:Math.floor(Date.now()/1000) + 10*60*60
-
+                authorId: author._id
             },
             "functionup-uranium"
         );
