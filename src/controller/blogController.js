@@ -118,12 +118,10 @@ const getBlogs = async function (req, res) {
             filter.authorId = authorId
         }
 
-
         filter.isDeleted = false
         filter.isPublished = true
-        console.log(filter)
 
-        let filterData = await blogModel.find(filter).count();
+        let filterData = await blogModel.find(filter);
 
         if (filterData.length == 0) {
             return res.status(404).send({ status: false, msg: "Documents not found.." });
@@ -154,6 +152,16 @@ const updateblog = async function (req, res) {
 
         const { title, body, tags, subcategory } = data;
 
+        let blog = await blogModel.findById(blogId);
+
+        if (!blog) {
+            return res.status(404).send({status: false, msg:"No such blog exists"});
+        }
+
+        if (blog.isDeleted == true) {
+            return res.status(400).send({ status: false, msg: "Blog not found, may be deleted" })
+        }
+
         if (title != undefined) {
             if (!stringChecking(title))
                 return res.status(400).send({status: false, msg: "Please enter the title in right format...!" });
@@ -172,16 +180,6 @@ const updateblog = async function (req, res) {
         if (subcategory != undefined) {
             if (!stringChecking(subcategory))
                 return res.status(400).send({status: false, msg: "Please enter the subcategory in right format...!" });
-        }
-
-        let blog = await blogModel.findById(blogId);
-
-        if (!blog) {
-            return res.status(404).send({status: false, msg:"No such blog exists"});
-        }
-
-        if (blog.isDeleted == true) {
-            return res.status(400).send({ status: false, msg: "Blog not found, may be deleted" })
         }
 
         let updatedblog = await blogModel.findByIdAndUpdate({ _id: blogId }, { $addToSet: { tags: tags, subcategory: subcategory }, $set: { title: title, body: body, publishedAt: Date.now() } }, { new: true });
@@ -241,7 +239,6 @@ const deleteblog2 = async function (req, res) {
         const query1 = req.query
 
         let fetchdata = await blogModel.find(query1)
-
 
         if (fetchdata.length == 0) {
             return res.status(404).send({ status: false, msg: " Blog document doesn't exist " })

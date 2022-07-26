@@ -15,10 +15,8 @@ const typeChecking = function(data){
 const createAuthor = async function (req, res) {
     
     try {
-        let data = req.body;
-        
+        let data = req.body;       
         let {fname , lname , title , email , password} = data;
-
         if(!fname){
             return res.status(400).send({status: false,msg: "First Name is required...!"});
         }
@@ -43,13 +41,17 @@ const createAuthor = async function (req, res) {
         if(!typeChecking(email)){
             return res.status(400).send({status: false,msg: "Please enter the email in right format...!"});
         }
+        let duplicateEmail = await authorModel.findOne({ email: email});
+
+        if (duplicateEmail) {
+            return res.status(400).send({ status: false, msg: "Email Id already exist..!" });
+        }
         if(!password){
             return res.status(400).send({status: false,msg: "Password is required...!"});
         }
         if(!typeChecking(password)){
             return res.status(400).send({status: false,msg: "Please enter the password in right format...!"});
         }
-
         let createData = await authorModel.create(data);
         res.status(201).send({status: true, Data: createData });
     }
@@ -63,24 +65,19 @@ const login = async function (req, res) {
     try {
         let emailId = req.body.email;
         let pass = req.body.password;
-
         if (!(emailId && pass)) {
             return res.status(400).send({status: false, err: "Email-Id and Password must be provided...!" });
         }
-
         let user = await authorModel.findOne({ email: emailId, password: pass });
-
         if (!user) {
             return res.status(401).send({ status: false, msg: "Username or the Password is not corerct..!" });
         }
-
         let token = jwt.sign(
             {
                 authorId: user._id.toString()
             },
             "functionup-uranium"
         );
-
         res.status(200).send({ status: true, data: token });
     }
     catch (err) {
