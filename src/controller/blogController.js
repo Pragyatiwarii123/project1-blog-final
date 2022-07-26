@@ -235,23 +235,48 @@ const deleteblog = async function (req, res) {
 // - If the blog document doesn't exist then return an HTTP status of 404 with a body like [this](#error-response-structure)
 
 const deleteblog2 = async function (req, res) {
-    try {
-        const query1 = req.query
-
-        let fetchdata = await blogModel.find(query1)
-
-        if (fetchdata.length == 0) {
-            return res.status(404).send({ status: false, msg: " Blog document doesn't exist " })
+        try {
+            const filterQuery = { isDeleted: false }
+            const queryParams = req.query
+            const authorIdFromToken = req.authorId
+    
+            let { authorId, category, tags, subcategory, isPublished } = queryParams
+    
+            if (authorId)
+                if (!stringChecking(authorId) && mongoose.isValidObjectId(authorId)) filterQuery['authorId'] = authorId
+    
+            if (category)
+                if (!stringChecking(category)) filterQuery['category'] = category
+    
+            if (isPublished)
+                if (!stringChecking(isPublished)) filterQuery['isPublished'] = isPublished
+    
+            if (tags)
+                if (!stringChecking(tags)) {
+                    const tagsArr = tags.trim().split(',').map(tag => tag.trim())   
+                    filterQuery['tags'] = { $all: tagsArr }
+                }
+            if (subcategory)
+                if (!stringChecking(subcategory)) {
+                    const subcategoryArray = subcategory.trim().split(',').map(subcat => subcat.trim())
+                    filterQuery['subcategory'] = { $all: subcategoryArray }
+                }
+    
+            const blogs = await blogModel.find(filterQuery)
+    
+            if (blogs.length === 0) return res.status(404).send({ staus: false, Message: "No matching blogs found" })
+    
+            const idOfBlogsToDelete = blogs.map(blogs => { if (blogs.authorId.toString() === authorIdFromToken) return blogs._id })
+            if (idOfBlogsToDelete.length === 0) return res.status(404).send({ status: false, Message: "No blogs found" })
+    
+    
+            await blogModel.updateMany({ _id: { $in: idOfBlogsToDelete } }, { $set: { isDeleted: true, deletedAt: new Date() } })
+            return res.status(200).send({ status: true, Message: "Blog(s) deleted successfully" })
         }
-
-        let deletedtedUser = await blogModel.updateMany(query1, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
-
-        res.status(200).send({status: true, msg: "done", data: deletedtedUser });
+        catch (err) {
+            res.status(500).send({ status: false, Message: "Error", error: err.message })
+        }
     }
-    catch (err) {
-        res.status(500).send({status: false, msg: "Error", error: err.message })
-    }
-}
 
 
 module.exports.createBlog = createBlog;

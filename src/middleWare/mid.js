@@ -56,23 +56,7 @@ const authorization2 = async function(req,res,next){
     }
 }
 
-const authorization3 = async function(req,res,next){
-    try{
-        let createId = req.query.authorId;
-        let id = req.authorId;
-
-        if(id != createId){
-            return res.status(403).send({status: false , msg : "Not authorized..!" });
-        }
-        next();
-    }
-    catch(err){
-        res.status(500).send({ msg: "Error", error: err.message});
-    }
-}
-
 
 module.exports.authentication = authentication;
 module.exports.authorization1 = authorization1;
 module.exports.authorization2 = authorization2;
-module.exports.authorization3 = authorization3;

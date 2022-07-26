@@ -15,7 +15,7 @@ router.put("/blogs/:blogId",middleware.authentication,middleware.authorization1,
 
 router.delete("/blogs/:blogId",middleware.authentication,blogController.deleteblog);
 
-router.delete("/blogs",middleware.authentication,middleware.authorization3, blogController.deleteblog2);
+router.delete("/blogs",middleware.authentication, blogController.deleteblog2);
 
 router.post("/login",auhorController.login);
 
